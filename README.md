@@ -1,1 +1,1 @@
-GRAB A DEAL# grab-a-deal
+Block Chain implementation of GRAB A DEAL with Reach
