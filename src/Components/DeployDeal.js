@@ -14,7 +14,7 @@ const DeployDeal = () => {
     const [tokens, setTokens] = useState(2);
     // const [token, setToken] = useState(0);
     const [deadline,setDeadline] = useState(100);
-    const [readyMessage, setReadyMessage] = useState(null);
+    const [readyMessage, setReadyMessage] = useState("");
     const [contractInfo, setContractInfo] = useState(null);
     const [deployerAcc, setDeployerAcc] = useState(null);
     const [contract, setContract] = useState(null);
@@ -50,7 +50,7 @@ const DeployDeal = () => {
         const id = token.id
         console.log(id.toString());
 
-        backend.Deployer(contract, Object({deadline: deadline, token : id, units: tokens, ready : ready}))
+        backend.Deployer(contract, Object({deadline: deadline, token : id, units: tokens, ready : ready, seeApplicants:seeApplicants}))
         
         const contractInfo = JSON.stringify( await contract.getInfo(), null, 2);
         setContractInfo(contractInfo);
@@ -66,15 +66,19 @@ const DeployDeal = () => {
         setReadyMessage("Ready for applicants");
     }
 
+    const seeApplicants = (address) => {
+        setReadyMessage(readyMessage + '\n' + tokenName+ ' Token sent to '+address);
+    }
+
     return <div className='card'>
                 
                 <div className='card-body'>
                 <h3 className='text-warning font-weight-bold'>
                     Deployer
                 </h3>
-                    { readyMessage !== null ?
+                    { readyMessage !== "" ?
                     <div class="alert alert-success" role="alert">
-                                This is a success alert—check it out!
+                               {readyMessage}
                     </div> : ""}
 
                     {tokenId !== null ?  <p>Token Id : {tokenId}</p> : "" }   

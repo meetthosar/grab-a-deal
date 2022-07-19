@@ -25,6 +25,7 @@ const GrabDeal = () => {
         async () => {
             const account =  await reach.getDefaultAccount(reach.parseCurrency(1000));
             setAccount(account);
+            await getAccountBalance(account);
             const balAtomic = await reach.balanceOf(account);       
             const balance = await reach.formatCurrency(balAtomic, 4);
             await account.tokenAccept(tokenId);
@@ -32,8 +33,12 @@ const GrabDeal = () => {
             // const interaction = {applyTheOffer, timesUp}
 
             await contract.apis.Applicant.applyTheOffer(account.getAddress());
-            await getAccountBalance(tokenId);
-        } ).catch(e => { console.log(e); setTimeUpMessage(e.message)});
+            await getAccountBalance(account);
+            await getTokenBalance(account);
+        } ).catch(e => { 
+            if(e.message.includes('Already')) setTimeUpMessage("You have already received the token");
+            else setTimeUpMessage("Time up or List is full")
+        });
         // backend.Applicant(contract, Object(interaction))
 
     }
@@ -51,13 +56,18 @@ const GrabDeal = () => {
         getAccountBalance(account);
     }, [message])
 
-    const getAccountBalance = async(tokenId) => {
-        let tokenBalance = 0;
-        if(tokenId !== null){
-            tokenBalance = await reach.balancesOf(tokenId);
-            console.log(1);
+    const getAccountBalance = async(account) => {
+        let balance = 0;
+        // let tokenBalance = 0;
+        if(account !== null){
+            balance = await reach.balanceOf(account);
         }
-        setMessage("Account token balance is " + reach.formatCurrency(tokenBalance, 6) );
+        setMessage("Account balance is " + reach.formatCurrency(balance, 6)  );
+    }
+    const getTokenBalance = async(account) => {
+        const [amt, balances] = await reach.balancesOf(account,[tokenId]);
+        // setMessage(message +'<br>' + balances)
+        console.log(balances);
     }
 
     return <div className='card'>
@@ -68,7 +78,7 @@ const GrabDeal = () => {
                 </h3>
                     { timesUpMessage !== null ?
                     <div class="alert alert-danger" role="alert">
-                                {timesUpMessage}
+                                {timesUpMessage} (Not getting token balance raised issue in github)
                     </div> : ""}
 
                     
@@ -77,13 +87,14 @@ const GrabDeal = () => {
                     </div> 
 
                     <div className='form-group'>
-                        <label>Contract Info</label>
-                        <input type="text" placeholder='Contract Info' className='form-control' value={contractInfo} onChange={(e) => setContractInfo(e.target.value)} />
-                    </div>
-                    <div className='form-group'>
                         <label>Token ID</label>
                         <input type="text" placeholder='Token ID' className='form-control' value={tokenId} onChange={(e) => setTokenId(e.target.value)} />
                     </div>
+                    <div className='form-group'>
+                        <label>Contract Info</label>
+                        <input type="text" placeholder='Contract Info' className='form-control' value={contractInfo} onChange={(e) => setContractInfo(e.target.value)} />
+                    </div>
+                    
                     <div className='row form-group'>
                         <button className='btn btn-success' onClick={grabDeal}>Submit</button>
                     </div>
